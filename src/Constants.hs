@@ -72,7 +72,7 @@ healthPackageObject :: [(Float,Float)]
 healthPackageObject = [(-6.5,6.5),(-6.5,0.5),(0,-5.5),(6.5,0.5),(6.5,6.5)]
 
 
--- | Healt improvement
+-- | Health improvement
 healthImprovementNumber :: Int     -- number of points to add to healthBar
 healthImprovementNumber = 5
 

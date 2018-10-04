@@ -37,11 +37,11 @@ handleProjectilesAsteroidsCollision game =
         projectiles =zip [1..] $ playerProjectiles game 
         asteroidProjectilesList = [(a,p) | a <- asteroids, p <- projectiles]
         asteroidProjectilesListFiltered = filter (\x -> checkForAsteoridProjectileCollision  (snd ( fst x)) (snd ( snd x))) asteroidProjectilesList
-        asteroidIndicesForRemove = returnAsteroidIndices asteroidProjectilesList asteroidProjectilesListFiltered
-        projectileIndicesForRemove = returnProjectileIndices asteroidProjectilesList asteroidProjectilesListFiltered
-        remaindRegularAsteroids = filter (\x->  (elem (fst x) asteroidIndicesForRemove) == False) asteroids
-        bigAsteroidsForRemoveIndices = filter (\x->  (elem (fst x) asteroidIndicesForRemove) == True && aWidth (snd x) == widthAsteroidBig) asteroids
-        bigAsteroidsForRemove = map (\x -> (snd x)) bigAsteroidsForRemoveIndices
+        asteroidForRemove = map fst asteroidProjectilesListFiltered
+        projectileForRemove = map snd asteroidProjectilesListFiltered
+        remaindRegularAsteroids = deleteFirstsBy sameIndex asteroids asteroidForRemove
+        bigAsteroidsForRemoveIndices = filter (\x -> aWidth (snd x) == widthAsteroidBig) asteroidForRemove
+        bigAsteroidsForRemove = map snd bigAsteroidsForRemoveIndices
         gen = generator game
         (speedX1, gen') = randomR (lowestAsteroidSpeedX, highestAsteroidSpeedX) gen ::(Float, StdGen)
         (speedY1, gen'') = randomR (lowestAsteroidSpeedY,highestAsteroidSpeedY) gen' ::(Float, StdGen)
@@ -49,12 +49,14 @@ handleProjectilesAsteroidsCollision game =
         (speedY2, gen'''') = randomR (lowestAsteroidSpeedY,highestAsteroidSpeedY) gen''' ::(Float, StdGen)
         (deg, gen''''') = randomR (15,30) gen'''' ::(Float, StdGen)
         smallerAsteroidsFromBigger = foldl (\acc x ->  (Asteroid (aPosition x) widthAsteroidSmall (speedX1,speedY1) deg (sAsteroidSpriteSmall (sprites game))) : (Asteroid (aPosition x) widthAsteroidSmall ((-speedX1),speedY2) deg (sAsteroidSpriteSmall (sprites game))) : acc) [] bigAsteroidsForRemove
-        remaindProjectiles = filter (\x-> (elem (fst x) projectileIndicesForRemove) == False) projectiles
-        extraScore = length asteroidIndicesForRemove * asteroidDestructionScore
+        remaindProjectiles = deleteFirstsBy sameIndex projectiles projectileForRemove
+        extraScore = length asteroidForRemove * asteroidDestructionScore
+        sameIndex :: (Int,a) -> (Int,a) -> Bool
+        sameIndex (i1,_) (i2,_) = (i1==i2)
 
 
 checkForAsteoridProjectileCollision :: Asteroid -> Projectile -> Bool
-checkForAsteoridProjectileCollision asteroid projectile = centerDistance > radiusSum
+checkForAsteoridProjectileCollision asteroid projectile = centerDistance <= radiusSum
         where
         (ax, ay) = aPosition asteroid
         aw = aWidth asteroid / 2 --asteroid radius
@@ -62,18 +64,6 @@ checkForAsteoridProjectileCollision asteroid projectile = centerDistance > radiu
         pw = projectileRadius
         centerDistance = (square (ax-px)) + (square (ay-py))
         radiusSum = (square (aw + pw))
-
-returnAsteroidIndices :: [((Int , Asteroid),(Int, Projectile))] -> [((Int , Asteroid),(Int, Projectile))]->[Int]
-returnAsteroidIndices  unfilteredList filteredList = asteroidIndices
-        where 
-        asteroidsForRemoving = filter (\x-> (elem x filteredList) == False) unfilteredList
-        asteroidIndices = foldl (\acc x -> (fst ( fst x)) : acc) [] asteroidsForRemoving
-
-returnProjectileIndices :: [((Int , Asteroid),(Int, Projectile))] -> [((Int , Asteroid),(Int, Projectile))]->[Int]
-returnProjectileIndices  unfilteredList filteredList = projectileIndices
-        where 
-        projectilesForRemoving = filter (\x-> (elem x filteredList) == False) unfilteredList
-        projectileIndices = foldl (\acc x -> (fst (snd x)) : acc) [] projectilesForRemoving
 
 
 -- | Collision between asteroids and player
