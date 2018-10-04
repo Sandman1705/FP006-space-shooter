@@ -2,7 +2,7 @@
 
 Space Shooter game in Haskell using Gloss
 
-[Win32 executables](alas.matf.bg.ac.rs/~mi13211/Space-Shooter-Haskell-game.zip)
+[Win32 executables](https://alas.matf.bg.ac.rs/~mi13211/Space-Shooter-Haskell-game.zip)
 
 ## Authors:
 + Aleksandra Kovacevic
